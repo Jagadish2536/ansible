@@ -1,8 +1,8 @@
-- name: Setuping the catalogue server
-  hosts: Catalogue
+- name: setup the user server
+  hosts: User
   become: yes
   tasks:
-  - name: Disabling the old and enabling new nodejs 18
+  - name: disbale old with new nodejs
     ansible.builtin.shell: dnf module disable nodejs -y ; dnf module enable nodejs:18 -y
 
   - name: Installing the nodejs
@@ -10,7 +10,7 @@
       name: nodejs
       state: present
 
-  - name: Adding the roboshop user
+  - name: adding the roboshop user
     ansible.builtin.user:
       name: roboshop
 
@@ -19,33 +19,33 @@
       path: /app
       state: absent
 
-  - name: Creating the folder
+  - name: creating the directory
     ansible.builtin.file:
       path: /app
       state: directory
 
-  - name: Downloading the file
+  - name: downloading the data
     ansible.builtin.get_url:
-      url: https://roboshop-builds.s3.amazonaws.com/catalogue.zip
-      dest: /tmp
+      url: https://roboshop-builds.s3.amazonaws.com/user.zip
+      dest: /tmp/user.zip
 
-  - name: Unarchiving the files
+  - name: unarchive the files
     ansible.builtin.unarchive:
-      src: /tmp/catalogue.zip
-      dest: /app
+      src: /tmp/user.zip
+      dest: /tmp/user.zip
       remote_src: yes
 
-  - name: Installing the packages from files
+  - name: install dependies
     ansible.builtin.command: npm install
     args:
       chdir: /app
 
-  - name: set up the catalogue service
+  - name: setup the user service
     ansible.builtin.copy:
-      src: catalogue.service
-      dest: /etc/systemd/system/catalogue.service
+      src: user.service
+      dest: /etc/systemd/system/user.service
 
-  - name: loading the service
+  - name: reload the all services
     ansible.builtin.systemd_service:
       daemon_reload: true
 
@@ -60,15 +60,18 @@
       state: present
 
   - name: checking the data in the mongodb
-    ansible.builtin.command: mongo --host Mongodb.jagadish.online --quiet --eval 'db = db.getSiblingDB("catalogue"); db.products.count()'
+    ansible.builtin.command: mongo --host Mongodb.jagadish.online --quiet --eval 'db = db.getSiblingDB("users"); db.users.count()'
     register: output
 
   - name: Loading the schema
-    ansible.builtin.command: mongo --host Mongodb.jagadish.online < /app/schema/catalogue.js
+    ansible.builtin.command: mongo --host Mongodb.jagadish.online < /app/schema/user.js
     when: output.stdout == "0"
 
   - name: enable and start the catalogue service
     ansible.builtin.service:
-      name: catalogue
+      name: user
       state: started
       enabled: yes
+
+
+  
