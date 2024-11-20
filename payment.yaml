@@ -1,0 +1,53 @@
+- name: setup the cart server
+  hosts: Payment
+  become: yes
+  tasks:
+  - name: installing Python
+    ansible.builtin.dnf:
+      name: python36 gcc python3-devel
+      state: present
+
+  - name: adding the user roboshop
+    ansible.builtin.user:
+      name: roboshop
+
+  - name: delete the old files
+    ansible.builtin.file:
+      path: /app
+      state: absent
+
+  - name: creating the new directory
+    ansible.builtin.file:
+      path: /app
+      state: directory
+
+  - name: downloading the files
+    ansible.builtin.get_url:
+      url: https://roboshop-builds.s3.amazonaws.com/payment.zip
+      dest: /tmp/payment.zip
+
+  - name: unarchive the files
+    ansible.builtin.unarchive:
+      src: /tmp/payment.zip
+      dest: /app
+      remote_src: yes
+
+  - name: install the dependies
+    ansible.builtin.command: pip3.6 install -r requirements.txt
+    args:
+      chdir: /app
+
+  - name: copy the service
+    ansible.builtin.copy:
+      src: payment.service
+      dest: /etc/systemd/system/payment.service
+
+  - name: reload the services
+    ansible.builtin.systemd_service:
+      daemon_reload: true
+
+  - name: start and the enable service
+    ansible.builtin.service:
+      name: payment
+      state: started
+      enabled: yes
