@@ -1,0 +1,71 @@
+- name: Setuping the catalogue server
+  hosts: Shipping
+  become: yes
+  tasks:
+  - name: Installing the nodejs
+    ansible.builtin.package:
+      name: maven
+      state: present
+
+  - name: Adding the roboshop user
+    ansible.builtin.user:
+      name: roboshop
+
+  - name: delete the old data if exist
+    ansible.builtin.file:
+      path: /app
+      state: absent
+
+  - name: Creating the folder
+    ansible.builtin.file:
+      path: /app
+      state: directory
+
+  - name: Downloading the file
+    ansible.builtin.get_url:
+      url: https://roboshop-builds.s3.amazonaws.com/shipping.zip
+      dest: /tmp
+
+  - name: Unarchiving the files
+    ansible.builtin.unarchive:
+      src: /tmp/shipping.zip
+      dest: /app
+      remote_src: yes
+
+  - name: Installing the packages from files
+    ansible.builtin.shell: mvn clean package ; mv target/shipping-1.0.jar shipping.jar
+    args:
+      chdir: /app
+
+  - name: set up the shipping service
+    ansible.builtin.copy:
+      src: shipping.service
+      dest: /etc/systemd/system/shipping.service
+
+  - name: loading the service
+    ansible.builtin.systemd_service:
+      daemon_reload: true
+
+  - name: enable and start the shipping service
+    ansible.builtin.service:
+      name: shipping
+      state: started
+      enabled: yes
+
+  - name: Installing the mysql
+    ansible.builtin.package:
+      name: mysql
+      state: present
+
+  - name: checking the data in the mysql
+    ansible.builtin.command: mongo --host Mongodb.jagadish.online --quiet --eval 'db = db.getSiblingDB("catalogue"); db.products.count()'
+    register: output
+
+  - name: Loading the schema
+    ansible.builtin.command: mysql -h MySQL.jagadish.online -uroot -pRoboShop@1 < /app/schema/shipping.sql 
+    when: output.stdout == "0"
+
+  - name: restart the shipping service
+    ansible.builtin.service:
+      name: shipping
+      state: restarted
