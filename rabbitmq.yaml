@@ -3,10 +3,10 @@
   become: yes
   tasks:
   - name: Installing the yum repos
-    ansible.builtin.command: https://packagecloud.io/install/repositories/rabbitmq/erlang/script.rpm.sh | bash
+    ansible.builtin.shell: https://packagecloud.io/install/repositories/rabbitmq/erlang/script.rpm.sh | bash
 
   - name: Installing the yum repos for rabbitmq
-    ansible.builtin.command: https://packagecloud.io/install/repositories/rabbitmq/rabbitmq-server/script.rpm.sh | bash
+    ansible.builtin.shell: https://packagecloud.io/install/repositories/rabbitmq/rabbitmq-server/script.rpm.sh | bash
 
   - name: Installing the rabbitmq
     ansible.builtin.package:
