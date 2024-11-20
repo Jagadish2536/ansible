@@ -32,7 +32,7 @@
   - name: unarchive the files
     ansible.builtin.unarchive:
       src: /tmp/cart.zip
-      dest: /tmp
+      dest: /app
       remote_src: yes
 
   - name: install the dependies
