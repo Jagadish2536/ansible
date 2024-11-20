@@ -64,7 +64,7 @@
     register: output
 
   - name: Loading the schema
-    ansible.builtin.command: mysql -h MySQL.jagadish.online -uroot -p{{mysql_password}} < /app/schema/shipping.sql 
+    ansible.builtin.shell: mysql -h MySQL.jagadish.online -uroot -p{{mysql_password}} < /app/schema/shipping.sql 
     when: output.stdout != "1"
 
   - name: restart the shipping service
