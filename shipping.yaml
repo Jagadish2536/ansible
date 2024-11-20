@@ -1,6 +1,8 @@
 - name: Setuping the catalogue server
   hosts: Shipping
   become: yes
+  vars:
+    mysql_password: RoboShop@1
   tasks:
   - name: Installing the nodejs
     ansible.builtin.package:
@@ -57,13 +59,13 @@
       name: mysql
       state: present
 
-  - name: checking the data in the mysql
-    ansible.builtin.command: mongo --host Mongodb.jagadish.online --quiet --eval 'db = db.getSiblingDB("catalogue"); db.products.count()'
+  - name: checking the citeis in the mysql exsit or not
+    ansible.builtin.command: mysql -h MySQL.jagadish.online -uroot -p{{mysql_password}} -sN -e "SELECT COUNT(*) FROM INFORMATION_SCHEMA.SCHEMATA WHERE SCHEMA_NAME = 'cities'"
     register: output
 
   - name: Loading the schema
-    ansible.builtin.command: mysql -h MySQL.jagadish.online -uroot -pRoboShop@1 < /app/schema/shipping.sql 
-    when: output.stdout == "0"
+    ansible.builtin.command: mysql -h MySQL.jagadish.online -uroot -p{{mysql_password}} < /app/schema/shipping.sql 
+    when: output.stdout != "1"
 
   - name: restart the shipping service
     ansible.builtin.service:
