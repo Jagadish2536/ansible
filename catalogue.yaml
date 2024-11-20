@@ -53,8 +53,8 @@
       state: present
 
   - name: checking the data in the mongodb
-    ansible.builtin.command: mongo --host Mongodb.jagadish.online --quiet --evql 'db = db.get SiblingDB("catalogue"); db.products.count()'
-      register: output
+    ansible.builtin.command: mongo --host Mongodb.jagadish.online --quiet --eval 'db = db.getSiblingDB("catalogue"); db.products.count()'
+    register: output
 
   - name: Loading the schema
     ansible.builtin.command: mongo --host Mongodb.jagadish.online < /app/schema/catalogue.js
