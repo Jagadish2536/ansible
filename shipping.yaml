@@ -4,7 +4,7 @@
   vars:
     mysql_password: RoboShop@1
   tasks:
-  - name: Installing the nodejs
+  - name: Installing the maven
     ansible.builtin.package:
       name: maven
       state: present
